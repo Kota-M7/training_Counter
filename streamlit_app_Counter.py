@@ -9,6 +9,18 @@ import plotly.graph_objects as go
 dt_now = datetime.datetime.now()
 dt_today = datetime.date.today()
 
+#df_w = pd.read_csv('pandas_weight_data.csv', index_col=0)
+
+#if df_w['date'][-1:].values[0] == str(dt_today):
+#	print("same")
+#	df_w=df_w[:-1]
+#	df_w=df_w.append({'date': str(dt_today),'goal': float(40),'weight': float(23)}, ignore_index=True)
+
+#else:
+#	df_w=df_w.append({'date': str(dt_today),'goal': float(40),'weight': float(23)}, ignore_index=True)
+
+#df_w.to_csv('pandas_weight_data.csv')
+
 
 conn = sqlite3.connect('database.db')
 c = conn.cursor()
@@ -80,7 +92,12 @@ def main():
 					df=df.append({'watch': int(df.shape[0]+1), 'squat': int((df.shape[0]+1)*20), 'hip lift': int((df.shape[0]+1)*20),'hip joint': int((df.shape[0]+1)*32),'kcal': int((df.shape[0]+1)*34),'min': int((df.shape[0]+1)*4)}, ignore_index=True)
 					st.write(df.tail())
 					df.to_csv('pandas_normal.csv')
-					if df.shape[0]%10==0:
+					if df.shape[0]%100==0:
+						time.sleep(1)
+						st.balloons()
+						st.write(str(df.shape[0])+"回！?！?えらすぎっっ🥰🥰🥰")
+					
+					elif df.shape[0]%10==0:
 						time.sleep(1)
 						st.balloons()
 						st.write(str(df.shape[0])+"回達成！おめでとう🎉🎉🎉🎉🎉")
@@ -116,31 +133,41 @@ def main():
 					else:
 						st.write('無理せずゆっくり休んでね😢')
 				
-				df_w = pd.read_csv('pandas_weight_data.csv', index_col=0)
-				st.title('')
-				st.title('体重の変化')
-				weight=st.text_input('体重(kg)')
-				goal=st.text_input('目標体重(kg)')
+					df_w = pd.read_csv('pandas_weight_data.csv', index_col=0)
+					st.title('')
+					st.title('体重の変化')
+					weight=st.text_input('体重(kg)　例：55.2')
+					goal=st.text_input('目標体重(kg)　例：50.2')
 
-				df_w=df_w.append({'date': str(dt_today),'goal': float(goal),'weight': float(weight)}, ignore_index=True)
-				
+					if df_w['date'][-1:].values[0] == str(dt_today):
+						df_w=df_w[:-1]
+						df_w=df_w.append({'date': str(dt_today),'goal': float(goal),'weight': float(weight)}, ignore_index=True)
 
-				fig_w = go.Figure()
-				fig_w.add_trace(go.Scatter(x=df_w['date'],
-										 y=df_w['weight'],
-										 mode='lines',
-										 name='体重'))
-				fig_w.add_trace(go.Scatter(x=df_w['date'],
-										 y=df_w['goal'],
-										 mode='lines',
-										 name='目標'))
+					else:
+						df_w=df_w.append({'date': str(dt_today),'goal': float(goal),'weight': float(weight)}, ignore_index=True)
 
-				fig_w.update_layout(xaxis=dict(range=(datetime.date(2022, 2, 22),datetime.date(2022, 4, 8))))
+					st.write('前回から'+str(format(float(df_w['weight'][-1:].values[0])-float(df_w['weight'][-2:-1].values[0]),'.2f'))+'kgの変化!')
+					if float(df_w['weight'][-1:].values[0])-float(df_w['weight'][-2:-1].values[0])<=-0.15:
+						st.write('<span style="color:red;background:pink">減ったね！素晴らしい♪</span>',unsafe_allow_html=True)
 
-				st.write(fig_w)
+					st.write('目標達成まであと'+str(format(float(weight)-float(goal),'.2f'))+'kg!')
+
+					fig_w = go.Figure()
+					fig_w.add_trace(go.Scatter(x=df_w['date'],
+											 y=df_w['weight'],
+											 mode='lines',
+											 name='体重'))
+					fig_w.add_trace(go.Scatter(x=df_w['date'],
+											 y=df_w['goal'],
+											 mode='lines',
+											 name='目標'))
+
+					#fig_w.update_layout(xaxis=dict(range=(datetime.date(2022, 2, 22),datetime.date(2022, 4, 8))))
+
+					st.write(fig_w)
 
 
-				df_w.to_csv('pandas_weight_data.csv')
+					df_w.to_csv('pandas_weight_data.csv')
 
 
 			else:
