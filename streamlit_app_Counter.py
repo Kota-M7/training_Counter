@@ -3,6 +3,12 @@ import time
 import pandas as pd
 import sqlite3 
 import hashlib
+import datetime
+import plotly.graph_objects as go
+
+dt_now = datetime.datetime.now()
+dt_today = datetime.date.today()
+
 
 conn = sqlite3.connect('database.db')
 c = conn.cursor()
@@ -29,14 +35,13 @@ def login_user(username,password):
 def main():
 
 	st.title("トレーニング記録アプリ💪")
+	st.write(str(dt_now.year)+'年'+str(dt_now.month)+'月'+str(dt_now.day)+'日')
 
 	#menu = ["ログイン","サインアップ"]
 	menu = ["ログイン"]
 	choice = st.sidebar.selectbox("メニュー",menu)
 
 	if choice == "ログイン":
-		#st.subheader("ログイン画面です")
-
 		username = st.sidebar.text_input("ユーザー名を入力してください")
 		password = st.sidebar.text_input("パスワードを入力してください",type='password')
 
@@ -54,7 +59,7 @@ def main():
 
 				st.markdown(link, unsafe_allow_html=True)
 				st.write('')
-
+				
 
 				# グラフx軸設定
 				check = st.checkbox('エクササイズ完了😊')
@@ -69,10 +74,11 @@ def main():
 
 				df = pd.read_csv('pandas_normal.csv', index_col=0)
 				#df.to_csv('pandas_normal.csv')
-
+				
+				
 				if check==True and check_2==False:
 					df=df.append({'watch': int(df.shape[0]+1), 'squat': int((df.shape[0]+1)*20), 'hip lift': int((df.shape[0]+1)*20),'hip joint': int((df.shape[0]+1)*32),'kcal': int((df.shape[0]+1)*34),'min': int((df.shape[0]+1)*4)}, ignore_index=True)
-					st.write(df)
+					st.write(df.tail())
 					df.to_csv('pandas_normal.csv')
 					if df.shape[0]%10==0:
 						time.sleep(1)
@@ -109,7 +115,32 @@ def main():
 						st.write('調子は50％')
 					else:
 						st.write('無理せずゆっくり休んでね😢')
+				
+				df_w = pd.read_csv('pandas_weight_data.csv', index_col=0)
+				st.title('')
+				st.title('体重の変化')
+				weight=st.text_input('体重(kg)')
+				goal=st.text_input('目標体重(kg)')
 
+				df_w=df_w.append({'date': str(dt_today),'goal': float(goal),'weight': float(weight)}, ignore_index=True)
+				
+
+				fig_w = go.Figure()
+				fig_w.add_trace(go.Scatter(x=df_w['date'],
+										 y=df_w['weight'],
+										 mode='lines',
+										 name='体重'))
+				fig_w.add_trace(go.Scatter(x=df_w['date'],
+										 y=df_w['goal'],
+										 mode='lines',
+										 name='目標'))
+
+				fig_w.update_layout(xaxis=dict(range=(datetime.date(2022, 2, 22),datetime.date(2022, 4, 8))))
+
+				st.write(fig_w)
+
+
+				df_w.to_csv('pandas_weight_data.csv')
 
 
 			else:
